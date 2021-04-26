@@ -1,0 +1,6 @@
+name: Back
+org: serverlessinc
+description: Deploys a Node Express API service backed by DynamoDB with traditional Serverless Framework
+keywords: aws, serverless, faas, lambda, node, express, dynamodb
+repo: https://github.com/serverless/examples/Back
+license: MIT
