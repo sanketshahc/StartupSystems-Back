@@ -1,9 +1,14 @@
 {
-  "name": "aws-node-express-dynamodb-api",
+  "name": "Back",
   "version": "1.0.0",
   "description": "",
   "dependencies": {
     "express": "^4.17.1",
     "serverless-http": "^2.7.0"
+  },
+  "devDependencies": {
+    "firebase-token-verifier": "^0.1.0",
+    "serverless": "^2.38.0",
+    "serverless-offline": "^6.9.0"
   }
 }
