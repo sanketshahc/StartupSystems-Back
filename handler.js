@@ -50,7 +50,7 @@ async function validate(token) {
 
 const URL = 'https://api.1forge.com/quotes?pairs=USD/EUR,USD/JPY,EUR/JPY&api_key=Yrk6sYWHHfEA5QFh8xoSLqyOIgeEyuxJ'
 
-app.get('/converter', (req, response) => {
+app.get('/main', (req, response) => {
   const token = req.headers['Authorization']
   const status = validate(token)
   if (status.statusCode == 200) {
@@ -69,18 +69,11 @@ app.get('/converter', (req, response) => {
   })
 // q how do you debug this thing?
 
-app.post('/save', (req, response) => {
-  https.get(URL, (res) => {
-      let x
-      res.setEncoding('utf8');
-      res.on('data', (body) => {
-        x = body;
-      });
-      res.on('end', () => {response.json(x)})
-    });
-})
 
 app.post("/save", async function (req, res) {
+  const token = req.headers['Authorization']
+  const status = validate(token)
+
   const { userId, values } = req.body;
   // run auth check above
 
