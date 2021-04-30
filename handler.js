@@ -8,6 +8,11 @@ const USERS_TABLE = process.env.USERS_TABLE;
 const dynamoDbClient = new AWS.DynamoDB.DocumentClient();
 
 app.use(express.json());
+app.use((req, res, next) =>{
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+
 
 //q any better way to do the callback?
 //asignment
@@ -57,13 +62,16 @@ async function validate(token) {
     // }
 }
 
-
+// const headers = {  'Access-Control-Allow-Origin': '*'}
 const URL = 'https://api.1forge.com/quotes?pairs=USD/EUR,USD/JPY,EUR/JPY&api_key=Yrk6sYWHHfEA5QFh8xoSLqyOIgeEyuxJ'
 
 app.get('/main', (req, response) => {
     // console.log('headers',req.headers['authorization'])
     const token = req.headers['authorization']
     // let status
+    console.log('resp',response)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.statusCode = 201
     const validation = validate(token)
         .then((status)=>{
             // console.log('status',status)
@@ -104,25 +112,22 @@ app.post("/save", function (req, res) {
             console.log('params', params)
             try {
                 await dynamoDbClient.put(params);
-                  return {
-	  statusCode: 201,
-      headers,
-  }
+                res.headers['Access-Control-Allow-Origin'] = '*'
+                res.status(201)
+                return {
+                    statusCode: 201,
+                    'Access-Control-Allow-Origin': '*',
+                    }
             } catch (error) {
-                console.log(error);
-                res.status(500).json({error: "Could not find user"});
+            console.log(error);
+            res.status(500).json({error: "Could not find user"});
             }
-        })
-})
+            })
+            })
           ///fill out below
 
 
 
-app.use((req, res, next) => {
-  return res.status(404).json({
-    error: "Not Found",
-  });
-});
 
 
 //for testing when deployed...
@@ -203,11 +208,8 @@ app.post("/users", async function (req, res) {
   }
 });
 
-app.use((req, res, next) => {
-  return res.status(404).json({
-    error: "Not Found",
-  });
-});
+
+
 
 
 

@@ -1,6 +1,7 @@
 org: sanketshahc
 app: startupsystems
-service: Back
+service: aws-node-express-dynamodb-api
+
 
 frameworkVersion: '2'
 
@@ -35,9 +36,11 @@ functions:
       - http:
           path: /main
           method: ANY
+          cors: true
       - http:
           path: /save
           method: ANY
+          cors: true
 
 resources:
   Resources:
