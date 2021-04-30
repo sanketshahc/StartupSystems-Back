@@ -33,10 +33,10 @@ functions:
     handler: handler.handler
     events:
       - http:
-          path: /
+          path: /main
           method: ANY
       - http:
-          path: /{proxy+}
+          path: /save
           method: ANY
 
 resources:

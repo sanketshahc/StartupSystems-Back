@@ -19,10 +19,16 @@ app.get('/test', (req,res,next) => {
 
 // app.get('/',(req,res)=>{})
 
+AWS.config.update({
+    region: "us-east-1",
+    endpoint: "http://localhost:4000",
+    accessKeyId: "AKIAWPBPBWFPYRCUWSWR",
+    secretAccessKey: "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"
+})
 
 async function validate(token) {
     console.log("here? val")
-    console.log(token)
+    // console.log(token)
     if (!token) {
       return {
         statusCode: 401
@@ -32,70 +38,85 @@ async function validate(token) {
       // validate the token from the request
       console.log("trying")
       const decoded = await firebaseTokenVerifier.validate(token, "startupsys-44116")
+      console.log('decoded',decoded)
+      return {
+          statusCode: 201,
+          userId: decoded.sub
+      }
     } catch (err) {
       // the token was invalid,
-      console.error(err)
+        console.error(err)
         return {
           statusCode: 401
       }
     }
     // user is now confirmed to be authorized, return the data
-    console.log('returning')
-    return {
-      statusCode: 200,
-    }
+    // console.log('returning')
+    // return {
+    //   statusCode: 200,
+    // }
 }
 
-//todo fix the current user issue....test the console logs agsin
 
 const URL = 'https://api.1forge.com/quotes?pairs=USD/EUR,USD/JPY,EUR/JPY&api_key=Yrk6sYWHHfEA5QFh8xoSLqyOIgeEyuxJ'
 
 app.get('/main', (req, response) => {
-  const token = req.headers['Authorization']
-  const status = validate(token)
-  if (status.statusCode == 200) {
-      console.log("got200")
-      https.get(URL, (res) => {
-        let x
-        res.setEncoding('utf8');
-        res.on('data', (body) => {x = body});
-        res.on('end', () => {response.json(x)})
-      });
-  }
-  if (status.statusCode == 401) {
-      console.log("unauthorized")
-      response.json("Sorry, Unauthorized")
-  }
+    // console.log('headers',req.headers['authorization'])
+    const token = req.headers['authorization']
+    // let status
+    const validation = validate(token)
+        .then((status)=>{
+            // console.log('status',status)
+            if (status.statusCode == 201) {
+                console.log("got200")
+                https.get(URL, (res) => {
+                  let x
+                  res.setEncoding('utf8');
+                  res.on('data', (body) => {x = body});
+                  res.on('end', () => {response.json(x)})
+                });
+            }
+            if (status.statusCode == 401) {
+                console.log("unauthorized")
+                response.json("Sorry, Unauthorized")
+            }
+            })
   })
-// q how do you debug this thing?
 
 
-app.post("/save", async function (req, res) {
-  const token = req.headers['Authorization']
-  const status = validate(token)
 
-  const { userId, values } = req.body;
-  // run auth check above
-
-  ///fill out below
-  const params = {
-    TableName: USERS_TABLE,
-    Item: {
-      userId: userId,
-      USD: name,
-      EUR: name,
-      JPY: name,
-    },
-  };
-
-  try {
-    await dynamoDbClient.update(params).promise();
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Could not find user" });
+app.post("/save", function (req, res) {
+  console.log('apost',req.headers)
+  const token = req.headers['authorization'];
+  const values = req.body;
+  const validation = validate(token)
+        .then(async (status)=> {
+            console.log('staus', status)
+            const params = {
+                TableName: USERS_TABLE,
+                Key: {
+                    userId: status.userId
+                },
+                Item: {
+                    values: values
+                }
+            };
+            console.log('params', params)
+            try {
+                await dynamoDbClient.put(params);
+                  return {
+	  statusCode: 201,
+      headers,
   }
-});
+            } catch (error) {
+                console.log(error);
+                res.status(500).json({error: "Could not find user"});
+            }
+        })
+})
+          ///fill out below
+
+
 
 app.use((req, res, next) => {
   return res.status(404).json({
@@ -187,8 +208,6 @@ app.use((req, res, next) => {
     error: "Not Found",
   });
 });
-
-
 
 
 
